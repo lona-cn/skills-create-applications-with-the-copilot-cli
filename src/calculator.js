@@ -5,6 +5,9 @@
 // - subtraction (-)
 // - multiplication (* or x)
 // - division (/)
+// - modulo (%)
+// - exponentiation (power)
+// - square root (sqrt or √)
 
 function parseNumber(value, name) {
   const parsedValue = Number(value);
@@ -36,6 +39,30 @@ function division(left, right) {
   return left / right;
 }
 
+function modulo(left, right) {
+  if (right === 0) {
+    throw new Error("Modulo by zero is not allowed.");
+  }
+
+  return left % right;
+}
+
+function power(base, exponent) {
+  return base ** exponent;
+}
+
+function squareRoot(value) {
+  if (value < 0) {
+    throw new Error("Square root is not defined for negative numbers.");
+  }
+
+  return Math.sqrt(value);
+}
+
+function isUnaryOperation(operation) {
+  return ["sqrt", "square-root", "squareroot", "square_root", "√"].includes(operation);
+}
+
 function calculate(left, operation, right) {
   switch (operation) {
     case "+":
@@ -55,16 +82,46 @@ function calculate(left, operation, right) {
     case "divide":
     case "division":
       return division(left, right);
+    case "%":
+    case "mod":
+    case "modulo":
+      return modulo(left, right);
+    case "^":
+    case "**":
+    case "power":
+    case "exponentiation":
+      return power(left, right);
+    case "sqrt":
+    case "square-root":
+    case "squareroot":
+    case "square_root":
+    case "√":
+      return squareRoot(right ?? left);
     default:
       throw new Error(
-        `Unsupported operation: "${operation}". Use +, -, *, or /.`,
+        `Unsupported operation: "${operation}". Use +, -, *, /, %, power, or sqrt.`,
       );
   }
 }
 
 function runCli(argv = process.argv.slice(2)) {
+  if (argv.length === 2) {
+    const operation = argv[0].toLowerCase();
+
+    if (!isUnaryOperation(operation)) {
+      throw new Error(
+        "Usage: node src/calculator.js <number> <operation> <number> or node src/calculator.js sqrt <number>",
+      );
+    }
+
+    const value = parseNumber(argv[1], "operand");
+    return calculate(value, operation);
+  }
+
   if (argv.length !== 3) {
-    throw new Error("Usage: node src/calculator.js <number> <operation> <number>");
+    throw new Error(
+      "Usage: node src/calculator.js <number> <operation> <number> or node src/calculator.js sqrt <number>",
+    );
   }
 
   const left = parseNumber(argv[0], "left operand");
@@ -89,7 +146,11 @@ module.exports = {
   subtraction,
   multiplication,
   division,
+  modulo,
+  power,
+  squareRoot,
   calculate,
+  isUnaryOperation,
   parseNumber,
   runCli,
 };
